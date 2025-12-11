@@ -35,6 +35,7 @@ elseif(ament_cmake_FOUND)
   find_package(ament_cmake REQUIRED)
   find_package(rosidl_default_generators REQUIRED)
   find_package(std_msgs REQUIRED)
+  find_package(rclcpp REQUIRED)
 
   rosidl_generate_interfaces(${PROJECT_NAME}
     msg/DataPoint.msg
@@ -45,6 +46,31 @@ elseif(ament_cmake_FOUND)
     DEPENDENCIES std_msgs
     ADD_LINTER_TESTS
     )
+
+
+  add_executable(example example.cpp)
+
+  target_include_directories(example PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+
+  rosidl_get_typesupport_target(cpp_typesupport_target
+    ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  target_link_libraries(example "${cpp_typesupport_target}")
+
+  ament_target_dependencies(example rclcpp std_msgs)
+
+
+  install(DIRECTORY include/
+    DESTINATION include/${PROJECT_NAME}
+  )
+
+  ament_export_include_directories(
+    include
+  )
+  install(TARGETS
+    example
+    DESTINATION lib/${PROJECT_NAME})
 
   ament_export_dependencies(rosidl_default_runtime)
   ament_export_dependencies(std_msgs)
